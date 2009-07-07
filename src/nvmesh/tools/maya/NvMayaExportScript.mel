@@ -1,0 +1,71 @@
+
+// This mel script should be placed inside your scripts directory.
+//
+// $parent - the parent UI layout
+// $action - "post" or "query"
+// $settings - the initial exporter settings
+// $callback - the function to call
+//
+global proc int NvMayaExportScript(string $parent, string $action, string $settings, string $callback)
+{
+  	// if we need to create the user interface...
+	if ($action == "post")
+	{
+		// attachs the GUI to the correct parent layout
+		setParent $parent;
+		
+		// create a simple layout for the controls
+		columnLayout -adj true;
+
+		// Set default options.
+		float $minTime = `playbackOptions -q -min`;
+		float $maxTime = `playbackOptions -q -max`;
+
+		float $referenceFrame = max(-1, $minTime);
+		float $beginFrame = max(0, $minTime);
+		float $endFrame = $maxTime;
+
+		 // Parse previous options.
+		string $options[];
+		int $ntokens = `tokenize $settings " " $options`;
+
+		// loop through each option
+		for ($i = 0; $i < $ntokens; ++$i)
+		{
+  			// get this option
+			$option = $options[$i];
+
+			if ($option == "-referenceFrame")
+			{
+				$referenceFrame = $options[++$i];
+			}
+			else if ($option == "-animationRange")
+			{
+				$beginFrame = $options[++$i];
+				$endFrame = $options[++$i];
+			}
+		}
+
+		floatFieldGrp 
+			-l "Reference Frame:"
+			-value1 $referenceFrame ReferenceFrame;
+
+		floatFieldGrp 
+			-l "Animation Range:" 
+			-numberOfFields 2
+			-value1 $beginFrame -value2 $endFrame AnimationRange;
+	}
+	else if ($action == "query")
+	{
+		string $option = "-referenceFrame ";
+		$option += `floatFieldGrp -q -v referenceFrame` + " ";
+		
+		$option += "-animationRange ";
+		$option += `floatFieldGrp -q -v1 animationRange` + " ";
+		$option += `floatFieldGrp -q -v2 animationRange` + " ";
+		
+		eval( $callback + "\"" + $option + "\"" );
+	}
+
+	return 1;
+}

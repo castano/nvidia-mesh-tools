@@ -1,0 +1,8 @@
+#!/bin/sh
+
+tar zcvf nvidia-tessellation-tools-`cat VERSION`.tar.gz \
+	--exclude '.*' --exclude debian --exclude '*~' --exclude buildpkg \
+	--exclude build --exclude tags --exclude Makefile \
+	--exclude vc7 --exclude vc8 --exclude project \
+	--exclude 'nvidia-tessellation-tools-*.tar.gz' \
+	--transform 's,^,nvidia-tessellation-tools/,' *

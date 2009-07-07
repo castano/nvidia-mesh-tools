@@ -1,0 +1,701 @@
+<html>
+<body>
+
+<H1>Release Notes (July 15, 2008)</H1>
+
+<H2>Index</H2>
+
+<ol>
+	<li><a href="#1">Contents</a></li>
+	<li><a href="#2">Installation</a></li>
+	<ol>
+		<li><a href="#2.1">Prerequisites</a></li>
+		<li><a href="#2.2">Compilation</a></li>
+		<li><a href="#2.3">Execution</a></li>
+	</ol>
+	<li><a href="#3">Examples</a></li>
+	<ol>
+		<li><a href="#3.1">Bezier ACC</a></li>
+		<li><a href="#3.2">Gregory ACC</a></li>
+		<li><a href="#3.3">Watertight ACC</a></li>
+		<li><a href="#3.4">Geometry Images</a></li>
+		<li><a href="#3.5">Triangle Interpolation</a></li>
+		<li><a href="#3.6">Hair</a></li>
+	</ol>
+	<li><a href="#4">Tools</a></li>
+	<ol>
+		<li><a href="#4.1">Baker Tool</a></li>
+		<li><a href="#4.2">Mesh Analyzer</a></li>
+	</ol>
+	<li><a href="#5">Documentation</a></li>
+	<li><a href="#6">Libraries</a></li>
+	<ol>
+		<li><a href="#6.1">nvtessellation</a></li>
+	</ol>
+	<li><a href="#7">ChangeLog</a></li>
+	<ol>
+		<li><a href="#7.1">Release 0.1.0</a></li>
+		<li><a href="#7.2">Release 0.1.1</a></li>
+		<li><a href="#7.3">Release 0.1.2</a></li>
+		<li><a href="#7.4">Release 0.1.3</a></li>
+	</ol>
+	<li><a href="#8">License</a></li>
+</ol>
+
+
+<a name="1"></a><H2>1. Contents</H2>
+
+<p>
+The primary purpose of these tools and examples was to:
+
+<ul>
+<li>Validate the programming model and the hardware design.</li>
+<li>Analyze hardware peformance under different usage scenarios.</li>
+</ul>
+
+Some developers have expressed interest in having early access to this source code, and this is the primary reason for having this early release. However, keep in mind that most of this code was designed only for internal use, and might not be up to the same standards of our public SDKs.
+</p>
+
+<p>
+<strong>Note that all the source code and documentation included in this package is provided under the terms and
+conditions of a Non-Disclosure Agreement. Any reproduction or disclosure to any third party without the express written consent of NVIDIA is prohibited.</strong>
+</p>
+
+<p>
+What is included here:
+
+<ul>
+<li>A framework that allows us to write tessellation shaders, and assemble them in a way that can be run in current generation hardware, by relying on mesh instancing. The framework implements a subset of OpenGL, and an early draft of the OpenGL tessellation extension.</li>
+<li>A set of examples built on top of this framework, that show how to implement different techniques.</li>
+<li>A set of mesh processing tools to generate data for these examples.</li>
+</ul>
+
+What is our final goal:
+
+<ul>
+<li>Produce a set of tessellation examples that can be released as part of the nvsdk with minimal modifications.</li>
+<li>Document these examples and the techniques that they implement.</li>
+<li>Create tessellation library meant to be used by third parties to generate content for tessellation.</li>
+<li>Create a set of standalone tools and plugins to assist in content creation.</li>
+</ul>
+</p>
+
+<a name="2"></a><H2>2. Installation</H2>
+
+<a name="2.1"></a><H3>2.1. Prerequisites</H3>
+
+<ul>
+<li><a href="http://www.cmake.org/HTML/Download.html">Download cmake</a> and install it.</li>
+<li><a href="http://developer.nvidia.com/object/cg_toolkit.html#downloads">Download Cg 2.0</a> and install it.</li>
+</ul>
+
+<a name="2.2"></a><H3>2.2. Compilation</H3>
+
+<p>
+Visual Studio projects are not available, but can be created as follows:
+
+<pre>
+$ cd ./nvidia-tessellation-tools/
+$ mkdir vc8
+$ cd vc8
+$ cmake .. -G "Visual Studio 8 2005"
+</pre>
+
+That will output a message like this:
+
+<pre>
+-- Check for working C compiler: cl
+-- Check for working C compiler: cl -- works
+-- Check size of void*
+-- Check size of void* - done
+-- Check for working CXX compiler: cl
+-- Check for working CXX compiler: cl -- works
+-- Looking for OpenGL - found
+-- Looking for GLUT - found
+-- Looking for GLEW - found
+-- Looking for Cg - found
+-- Looking for CUDA - found
+-- Found JPEG: ./nvidia-tessellation-tools/gnuwin32/lib/jpeg.lib
+-- Looking for JPEG - found
+-- Found ZLIB: ./nvidia-tessellation-tools/gnuwin32/lib/zlib.lib
+-- Found PNG: ./nvidia-tessellation-tools/gnuwin32/lib/libpng.lib
+-- Looking for PNG - found
+-- Looking for TIFF - found
+-- Looking for Q_WS_X11
+-- Looking for Q_WS_X11 - not found.
+-- Looking for Q_WS_MAC
+-- Looking for Q_WS_MAC - not found.
+-- Looking for Q_WS_WIN
+-- Looking for Q_WS_WIN - found
+-- Found Qt-Version 4.2.2
+-- Looking for pthread.h
+-- Looking for pthread.h - not found
+-- Looking for include files HAVE_UNISTD_H
+-- Looking for include files HAVE_UNISTD_H - not found.
+-- Looking for include files HAVE_STDARG_H
+-- Looking for include files HAVE_STDARG_H - found
+-- Looking for include files HAVE_SIGNAL_H
+-- Looking for include files HAVE_SIGNAL_H - found
+-- Looking for include files HAVE_EXECINFO_H
+-- Looking for include files HAVE_EXECINFO_H - not found.
+-- Looking for include files HAVE_MALLOC_H
+-- Looking for include files HAVE_MALLOC_H - found
+-- Found PNG: ./nvidia-tessellation-tools/gnuwin32/lib/libpng.lib
+-- Configuring done
+-- Generating done
+-- Build files have been written to: ./nvidia-tessellation-tools/vc8
+</pre>
+
+and will create the following solution file:
+
+<pre>
+./nvidia-tessellation-tools/vc8/NV.sln
+</pre>
+
+Open the solution file and build normally.
+</p>
+
+<p>
+If you want to use other compiler you can check the supported generators with the following command:
+
+<pre>
+$ cmake --help
+</pre>
+
+The code has been tested under Visual Studio 8 2005, Visual Studio 7 .NET 2003, and gcc-4.2.
+</p>
+
+<p>
+All the required libraries with the exception of Cg are included in the source code package.
+</p>
+
+<a name="2.3"></a><H3>2.3. Execution</H3>
+
+In order to run most of the examples you have to compile the INSTALL project. By default, that will copy the files to:
+
+<pre>
+c:\Program Files\NV\
+</pre>
+
+The resulting binaries should be run within the created directory structure, so that they can find the shaders and assets that they reference. So, the "Debugging -> Working Directory" project property must be set to:
+
+<pre>
+c:\Program Files\NV\bin\
+</pre>
+
+
+<a name="3"></a><h2>3. Examples</h2>
+
+<p>
+At this point there's no DirectX or OpenGL API with support for tessellation. So, all of our examples are based on our internal emulation framework. The source code for these examples is available at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/
+</pre>
+
+<p>
+The following is a list of planned SDK examples, their status, and how they relate to our internal experiments.
+</p>
+
+
+<a name="3.1"></a><h3>3.1. Bezier ACC</h3>
+
+<img alt="Bezier ACC screenshot" src="doc/images/basicAcc.png">
+
+<p>
+This example implements the Bezier ACC method as described in:
+</p>
+
+<ul>
+<li>Charles Loop and Scott Schaefer.  <a href="http://research.microsoft.com/~cloop/msrtr-2007-44.pdf">"Approximating Catmull-Clark Subdivision Surfaces with Bicubic Patches"</a>. Microsoft Research Technical Report, MSR-TR-2007-44. 2007</li>
+</ul>
+
+<p>
+Special care is taken to make sure evaluation of positions and tangents is symmetric. Symmetric evaluation is easy to achieve for regular patches. However, the standard ACC method does not produce symmetric tangents across edges around extraordinary vertices.
+</p>
+
+<p>
+Two solutions are proposed. One is to decide what patch owns each boundary and corner of the mesh, then replicate the same tangents in all boundaries and corners, and decide which ones to use according to the defined boundary rules. The other is to use symmetric tangents as described in:
+</p>
+
+<ul>
+<li>Charles Loop. "Symmetric Calculation for Approximate Catmull-Clark Patch Boundaries". Microsoft Research Technical Report, MSR-TR-##. February 21, 2007.</li>
+</ul>
+
+<p>
+For efficiency reasons three different shaders are used to render the whole surface. One that handles only regular faces, another that handles irregular faces with only a single extraordinary vertex (semi-regular), and other that handles faces with an arbitrary number of extraordinary vertices.
+</p>
+
+<p>
+The major source of artifacts are the cracks caused by texture sampling. This example implements a seamless texture sampling algorithm. See the <a href="#3.4">Geometry Images</a> example for more details.
+</p>
+
+
+<a name="3.1.1"></a><h4>3.1.1. Implementation Status</h4>
+
+<p>
+This example has been implemented within the emulation framework, and can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/emuacc/
+./nvidia-tessellation-tools/src/demos/emubezier/
+</pre>
+
+<p>
+Work on the SDK example has not started yet, but documentation and source code will be available at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/nvsdk/bezierAcc
+</pre>
+
+
+<a name="3.1.2"></a><h4>3.1.2. Known Issues</h4>
+
+<ul>
+<li>TODO: Support for tangent space normal and vector displacements maps is in progress.</li>
+<li>FIXME: Symmetric tangents are not evaluated yet. This is a regresion from previous releases.</li>
+<li>TODO: Optimizations for regular patches are not implemented.</li>
+</ul>
+
+
+<a name="3.2"></a><h3>3.2. Gregory ACC</h3>
+
+<img alt="Gregory ACC screenshot" src="doc/images/gregoryAcc.png">
+
+<p>
+This example shows how to implement a variation of the ACC method, that uses Gregory patches instead of Bezier patches in order to obtain tangent continuity around extraordinary vertices. This approximation is described here:
+</p>
+
+<ul>
+<li>Charles Loop. "Modified Approximate Catmull-Clark Patches". Microsoft Research. July 23, 2007.</li>
+</ul>
+
+<p>
+One of the advantages of Gregory patches is that they can be extended to triangles as explained here:
+</p>
+
+<ul>
+<li><a href="doc/triangle-ACC-short.pdf">"Approximate Catmull-Clark triangle scheme"</a>. Denis Kovacs, NVIDIA, August 2007</li>
+</ul>
+
+<a name="3.2.1"></a><h4>3.2.1. Implementation Status</h4>
+
+<p>
+This example has been implemented within the emulation framework, and can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/emugregoryacc/
+</pre>
+
+<p>
+Work on the SDK example has not started yet, but documentation and source code will be available at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/nvsdk/gregoryAcc
+</pre>
+
+<a name="3.2.2"></a><h4>3.2.2. Known Issues</h4>
+
+<ul>
+<li>TODO: Normal and displacement maps are not supported yet.</li>
+</ul>
+
+
+<a name="3.3"></a><h3>3.3. Watertight ACC</h3>
+
+<img alt="Gregory ACC screenshot" src="doc/images/gregoryAcc.png">
+
+<p>
+This example shows how to implement a variation of the Gregory ACC method that is fully watertight and does not require additional control points.  Some details about this method are available in <a href="doc/WaterTightGregory.ppt">this presentation</a>, but they will be described in more detail in the future.
+</p>
+
+<a name="3.3.1"></a><h4>3.3.1. Implementation Status</h4>
+
+<p>
+This example has been implemented within the emulation framework, and can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/emubezier1/
+</pre>
+
+<p>
+Work on the SDK example has not started yet, but documentation and source code will be available at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/nvsdk/watertightGregoryAcc
+</pre>
+
+<a name="3.3.2"></a><h4>3.3.2. Known Issues</h4>
+
+<ul>
+<li>TODO: Support for tangent space normal maps and vector displacements is in progress.</li>
+<li>TODO: Documentation describing how watertightness is achieved is not yet available.</li>
+<li>TODO: Spline mesh boundaries not yet supported.</li>
+<li>FIXME: There are occasional artifacts that are not well understood yet.</li>
+</ul>
+
+
+<a name="3.4"></a><h3>3.4. Geometry Images</h3>
+
+<img alt="Geometry Images screenshot" src="doc/images/geometryImage.png">
+
+<p>
+This example implements a variation of multi-chart geometry images as described in:
+</p>
+
+<ul>
+<li><a href="http://research.microsoft.com/~hoppe/#mcgim">Multi-chart geometry images.</a><br>
+P. Sander, Z. Wood, S. Gortler, J. Snyder, H. Hoppe.<br>
+Symposium on Geometry Processing 2003, 146-155.</li>
+</ul>
+
+<p>
+Instead of rendering the reconstructed surface using a single grid, we retain the connectivity information. The mesh is decomposed in a set of patches in the triangular and quad domains, that only contain per vertex texture coordinates. That allows us to use a much more simple zippering algorithm, that requires a very simple preprocessing. It also enables us to smoothly change the level of detail by sampling the geometry image at arbitrary locations.
+</p>
+
+<p>
+To prevent cracks in the reconstructed mesh and obtain a watertight surface we define a patch owner for each edge and vertex of the mesh. All the other patches that share that edge or vertex will store the texture coordinates of the owner patch along the edge or at the corner. When sampling the texture on the boundaries and corners all patches use the texture coordinates of the owner, 
+</p>
+
+<p>
+For this reason, each vertex has to store not only its own texture coordinate, but also the texture coordinates of the two nearest patch boundaries and of the corner. That means that for a quadrangular patch we have to store a total of 16 texture coordinates:
+</p>
+
+<pre>
+t5|t1 t1|t6
+--+-----+--
+t4|t0 t0|t2
+  |     |
+t4|t0 t0|t2
+--+-----+--
+t8|t3 t3|t7
+</pre>
+
+
+<a name="3.4.1"></a><h4>3.4.1. Implementation Status</h4>
+
+<p>
+This example has been implemented within the emulation framework, and can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/emugim/
+</pre>
+
+<p>
+Work on the SDK example has not started yet, but documentation and source code will be available at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/nvsdk/geometryImages
+</pre>
+
+
+<a name="3.4.2"></a><h4>3.4.2. Known Issues</h4>
+
+<p>
+None.
+</p>
+
+
+<a name="3.5"></a><h3>3.5. Triangle Interpolation</h3>
+
+<img alt="Triangle Interpolation screenshot" src="doc/images/triangleInterpolation.png">
+
+<p>
+This example shows how to implement the following triangle interpolation techniques:
+
+<ul>
+<li>PN-Triangles</li>
+<li>MN-Triangles</li>
+<li>Chiyokura/Kimura Gregory Triangles</li>
+<li>Phong Tessellation</li>
+</ul>
+
+<a name="3.4.1"></a><h4>3.4.1. Implementation Status</h4>
+
+<p>
+This example has been implemented within the emulation framework as a set of multiple examples, and can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/emupntriangle/
+./nvidia-tessellation-tools/src/demos/emumidedge/
+./nvidia-tessellation-tools/src/demos/emugregorytri/
+./nvidia-tessellation-tools/src/demos/emuphong/
+</pre>
+
+<p>
+Work on the SDK example has not started yet, but documentation and source code will be available at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/nvsdk/triangleInterpolation
+</pre>
+
+<a name="3.4.2"></a><h4>3.4.2. Known Issues</h4>
+
+<ul>
+<li>TODO: Implement other triangle interpolation schemes:
+	<ul>
+	<li>Foley-Opitz Gregory Triangles.</li>
+	<li>Hybrid Triangular Bezier Patches.</li>
+	</ul></li>
+<li>TODO: Analyze and guarantee watertightness of these methods.</li>
+<li>TODO: Add support for these surfaces in baker tool.</li>
+<li>TODO: Add support for displacement mapping.</li>
+</ul>
+
+<a name="3.6"></a><h3>3.6. Hair</h3>
+
+<img alt="Hair screenshot" src="doc/images/hair.png">
+
+<p>
+This example shows how to use tessellation to render hair. This is done by using the iso-lines tessellation domain, and the geometry shader to convert the lines into camera facing rectangles.
+</p>
+
+<a name="3.6.1"></a><h4>3.6.1. Implementation Status</h4>
+
+<p>
+This example has been implemented within the emulation framework, and can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/emuhair/
+</pre>
+
+<p>
+An implementation that does not depend on the emulator, and that only relies on current hardware features can be found at:
+</p>
+
+<pre>
+./nvidia-tessellation-tools/src/demos/nvsdk11/Hair/
+</pre>
+
+<p>
+The latter does not only implements hair rendering, but also hair simulation and animation. You can find more details about it <a href="src/nvsdk11/Hair/Details.html">here</a>.
+</p>
+
+
+<a name="3.6.2"></a><h4>3.6.2. Known Issues</h4>
+
+<ul>
+<li>TODO: reduce geometry shader output to pixel shader.</li>
+<li>TODO: add a pass for computing internal shadows.</li>
+</ul>
+
+
+<a name="4"></a><h2>4. Tools</h2>
+
+<p>
+In addition to the SDK examples we would like to provide tools to ease the creation of assets for tessellation. Most probably these tools will be released openly and become part of the NVIDIA Texture Tools.
+</p>
+
+<a name="4.1"></a><h3>4.1. Baker Tool</h3>
+
+<p>
+The baker is a normal and displacement map generation tool. Instead of using ray casting to map features of the high resolution mesh to the low resolution mesh, it assumes that both meshes have a consistent parameterization. Note that this is always the case for meshes that have been exported from ZBrush and Mudbox, since the high res mesh was generated subidividing and sculpting the low resolution mesh.
+</p>
+
+<p>
+Currently the baker tool can only generate normal maps, scalar and vector displacement maps, and occlusion maps. Support for other attributes will be added in the future.
+</p>
+
+<a name="4.1.1"></a><h4>4.1.1. Known Issues</h4>
+
+<ul>
+<li>TODO: Add support for gregory base surfaces.</li>
+<li>TODO: Add support for raycasting methods.</li>
+<li>TODO: Extend support for occlusion map, to also compute other visibility based attributes.</li>
+</ul>
+
+
+<a name="4.2"></a><h3>4.2. Mesh Analyzer</h3>
+
+<p>
+The mesh analyzer is a tool that analyzes the topology of each face and its 1-ring neighborhood. Approximation to Catmull Clark surfaces requires a different set of stencils for each topology, and rendering performance is based on total number of different topologies. This tool computes a histogram of faces, in which faces are grouped by topology.
+</p>
+
+<p>
+There's a maya plugin based on this tool that also modifies the input mesh coloring its faces according to the number of elements in their corresponding topology bucket.
+</p>
+
+<a name="4.2.1"><h4>4.2.1. How to run it</h4>
+
+<p>
+From the command line:
+
+<pre>
+$ nvmeshanalyzer mesh_file_name
+</pre>
+
+From the maya prompt, select a mesh and type:
+
+<pre>
+$ nvAnalyze [-color]
+</pre>
+</p>
+
+<a name="4.2.2"><h4>4.2.2. Known Issues</h4>
+
+<ul>
+<li>FIXME: Topology IDs are not computed correctly for mixed quad-triangle meshes.</li>
+<li>FIXME: Faces are colored according to the number of faces in their topology bucket, not according to the index of the backed in the histogram.</li>
+<li>TODO: Highlight regular, semi-regular, and irregular faces.</li>
+<li>TODO: Highlight polygonal faces.</li>
+<li>TODO: Color faces with gradients to indicate the most offending vertex.</li>
+</ul>
+
+
+<a name="5"></a><h2>5. Documentation</h2>
+
+<p>
+The available documentation is currently scarce:
+</p>
+
+<ul>
+<li><a href="doc/Tessellation Overview.ppt">"Tessellation Overview"</a> is a presentation that provides an overview of the tessellation pipeline and some of its applications.</li>
+
+<li><a href="doc/fp_consistency.doc">"FP-consistency issues in Tessellation"</a> is a paper that documents some of the sources of cracks due to algorithmic and floating point consistency issues.</li>
+
+<li><a href="doc/triangle-ACC-short.pdf">"Approximate Catmull-Clark triangle scheme"</a> is a paper that describes how to extend ACC to support triangles.</li>
+
+<li><a href="doc/Tessellation Content Creation Guidelines.ppt">"Tessellation Content Creation Guidelines"</a> is a presentation that outlines some of the problems and solutions to content creation issues.</li>
+
+<li><a href="doc/Hair Tessellation in Emulator.ppt">"Hair Tessellation in Emulator"</a> is a presentation that describes how hair is implemented using tessellation.</li>
+
+<li><a href="doc/WaterTightGregory.ppt">"Watertight Gregory ACC"</a> is a presentation that provides some details about how watertightness is achieved in the Gregory ACC scheme.</li>
+</ul>
+
+
+
+
+<a name="6"></a><h2>6. Libraries</h2>
+
+<p>
+Our goal is to provide an open source library in same spirit as the <a href="http://nvidia-texture-tools.googlecode.com">NVIDIA Texture Tools</a> to aide in the processing of subdivision surfaces for real-time rendering.
+</p>
+
+<a name="6.1"></a><h3>6.1. nvtessellation</h3>
+
+<p>
+This library will let you:
+</p>
+
+<ul>
+<li>Generate stencils for dynamic control point evaluation.</li>
+<li>Generate control points for rendering of static meshes.</li>
+<li>Sort patches by:
+	<ul>
+	<li>by tessellation domain</li>
+	<li>by the number of vertices</li>
+	<li>by topology id and boundary ownership mask</li>
+	<li>to maximize post transform cache hits</li>
+	</ul></li>
+<li>Sort vertices to maximize cache coherency.</li>
+</ul>
+
+<a name="6.1.1"></a><h4>6.1.1. Implementation Status</h4>
+
+<p>
+The nvtessellation library is currently not implemented. However, most of it's functionallity is already available in nvmesh and some of the examples. We are currently moving all the mesh processing code back to nvmesh, and cleaning it up. nvtessellation will simply wrap nvmesh with a friendly interface that will expose only what's needed by the planned SDK examples.
+</p>
+
+<a name="7"></a><H2>7. License</H2>
+
+<a name="7.1"></a><H3>7.1 Release 0.1.0</H3>
+
+<ul>
+<li>First public release.</li>
+</ul>
+
+<a name="7.2"></a><H3>7.2 Release 0.1.1</H3>
+
+<ul>
+<li>Baker Tool</li>
+	<ul>
+	<li>Added support for triangle meshes as base surfaces.</li>
+	<li>Compute occlusion maps using kd-tree montecarlo raytracing.</li>
+	<li>Improved smooth push-pull hole filling fitler.</li>
+	<li>Exposed more options to the command line.</li>
+	</ul>
+<li>Bezier ACC</li>
+	<ul>
+	<li>New AccMesh and AccMeshBuilder implementations.</li>
+	<li>Added support for extraordinary vertices on spline mesh boundaries.</li>
+	</ul>
+</ul>
+
+<a name="7.3"></a><H3>7.3 Release 0.1.2</H3>
+
+<ul>
+
+<li>Full 64-bit support in Windows and Linux.</li>
+
+<li>Baker Tool</li>
+	<ul>
+	<li>Added multithread support for computing the ambient occlusion.</li>
+	<li>Added support for bent-normals maps as described in the SIGGRAPH 2002 course “Production Ready Global Illumination”.</li>
+	<li>Added more flexible command line options to have more control over the baker settings.</li>
+	</ul>
+	
+<li>Bezier &amp; Gregory ACC</li>
+	<ul>
+	<li>AccMesh now supports both Gregory and Bezier patches.</li>
+	<li>Added support for spline boundaries in Gregory ACC.</li>
+	<li>Better handling of mixed quad-triangle meshes.</li>
+	</ul>
+</ul>
+
+<a name="7.4"></a><H3>7.4 Release 0.1.3</H3>
+
+<ul>
+<li>Improved Gregory ACC approximation.</li>
+<li>New emuphong example shows how to implement Phong Tessellation.</li>
+</ul>
+
+
+<a name="8"></a><H2>8. License</H2>
+
+<pre>
+Copyright 1993-2008 NVIDIA Corporation.  All rights reserved.
+
+This source code is subject to NVIDIA ownership rights under U.S. and
+international Copyright laws.  
+
+This software and the information contained herein is PROPRIETARY and
+CONFIDENTIAL to NVIDIA and is being provided under the terms and
+conditions of a Non-Disclosure Agreement.  Any reproduction or
+disclosure to any third party without the express written consent of
+NVIDIA is prohibited.
+
+NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
+CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
+IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
+IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
+OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE
+OR PERFORMANCE OF THIS SOURCE CODE.
+
+U.S. Government End Users.   This source code is a "commercial item" as
+that term is defined at  48 C.F.R. 2.101 (OCT 1995), consisting  of
+"commercial computer  software"  and "commercial computer software
+documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995)
+and is provided to the U.S. Government only as a commercial end item.
+Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
+227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
+source code with only those rights set forth herein.
+</pre>
+
+</body>
+</html>

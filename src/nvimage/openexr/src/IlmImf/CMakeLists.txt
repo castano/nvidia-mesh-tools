@@ -1,0 +1,217 @@
+PROJECT (IlmImf)
+
+SET(ILMIMF_SRCS
+	ImfArray.h
+	ImfAttribute.cpp
+	ImfAttribute.h
+	ImfAutoArray.h
+	ImfB44Compressor.cpp
+	ImfB44Compressor.h
+	ImfBoxAttribute.cpp
+	ImfBoxAttribute.h
+	ImfCRgbaFile.cpp
+	ImfCRgbaFile.h
+	ImfChannelList.cpp
+	ImfChannelList.h
+	ImfChannelListAttribute.cpp
+	ImfChannelListAttribute.h
+	ImfChromaticities.cpp
+	ImfChromaticities.h
+	ImfChromaticitiesAttribute.cpp
+	ImfChromaticitiesAttribute.h
+	ImfCompression.h
+	ImfCompressionAttribute.cpp
+	ImfCompressionAttribute.h
+	ImfCompressor.cpp
+	ImfCompressor.h
+	ImfConvert.cpp
+	ImfConvert.h
+	ImfDoubleAttribute.cpp
+	ImfDoubleAttribute.h
+	ImfEnvmap.cpp
+	ImfEnvmap.h
+	ImfEnvmapAttribute.cpp
+	ImfEnvmapAttribute.h
+	ImfFloatAttribute.cpp
+	ImfFloatAttribute.h
+	ImfFrameBuffer.cpp
+	ImfFrameBuffer.h
+	ImfFramesPerSecond.cpp
+	ImfFramesPerSecond.h
+	ImfHeader.cpp
+	ImfHeader.h
+	ImfHuf.cpp
+	ImfHuf.h
+	ImfIO.cpp
+	ImfIO.h
+	ImfInputFile.cpp
+	ImfInputFile.h
+	ImfInt64.h
+	ImfIntAttribute.cpp
+	ImfIntAttribute.h
+	ImfKeyCode.cpp
+	ImfKeyCode.h
+	ImfKeyCodeAttribute.cpp
+	ImfKeyCodeAttribute.h
+	ImfLineOrder.h
+	ImfLineOrderAttribute.cpp
+	ImfLineOrderAttribute.h
+	ImfLut.cpp
+	ImfLut.h
+	ImfMatrixAttribute.cpp
+	ImfMatrixAttribute.h
+	ImfMisc.cpp
+	ImfMisc.h
+	ImfName.h
+	ImfOpaqueAttribute.cpp
+	ImfOpaqueAttribute.h
+	ImfOutputFile.cpp
+	ImfOutputFile.h
+	ImfPixelType.h
+	ImfPizCompressor.cpp
+	ImfPizCompressor.h
+	ImfPreviewImage.cpp
+	ImfPreviewImage.h
+	ImfPreviewImageAttribute.cpp
+	ImfPreviewImageAttribute.h
+	ImfPxr24Compressor.cpp
+	ImfPxr24Compressor.h
+	ImfRational.cpp
+	ImfRational.h
+	ImfRationalAttribute.cpp
+	ImfRationalAttribute.h
+	ImfRgba.h
+	ImfRgbaFile.cpp
+	ImfRgbaFile.h
+	ImfRgbaYca.cpp
+	ImfRgbaYca.h
+	ImfRleCompressor.cpp
+	ImfRleCompressor.h
+	ImfScanLineInputFile.cpp
+	ImfScanLineInputFile.h
+	ImfStandardAttributes.cpp
+	ImfStandardAttributes.h
+	ImfStdIO.cpp
+	ImfStdIO.h
+	ImfStringAttribute.cpp
+	ImfStringAttribute.h
+	ImfTestFile.cpp
+	ImfTestFile.h
+	ImfThreading.cpp
+	ImfThreading.h
+	ImfTileDescription.h
+	ImfTileDescriptionAttribute.cpp
+	ImfTileDescriptionAttribute.h
+	ImfTileOffsets.cpp
+	ImfTileOffsets.h
+	ImfTiledInputFile.cpp
+	ImfTiledInputFile.h
+	ImfTiledMisc.cpp
+	ImfTiledMisc.h
+	ImfTiledOutputFile.cpp
+	ImfTiledOutputFile.h
+	ImfTiledRgbaFile.cpp
+	ImfTiledRgbaFile.h
+	ImfTimeCode.cpp
+	ImfTimeCode.h
+	ImfTimeCodeAttribute.cpp
+	ImfTimeCodeAttribute.h
+	ImfVecAttribute.cpp
+	ImfVecAttribute.h
+	ImfVersion.cpp
+	ImfVersion.h
+	ImfWav.cpp
+	ImfWav.h
+	ImfXdr.h
+	ImfZipCompressor.cpp
+	ImfZipCompressor.h
+	b44ExpLogTable.cpp
+	b44ExpLogTable.h)
+
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
+
+IF(OPENEXR_SHARED)
+	ADD_LIBRARY(IlmImf SHARED ${ILMIMF_SRCS})
+ELSE(OPENEXR_SHARED)
+	ADD_LIBRARY(IlmImf ${ILMIMF_SRCS})
+ENDIF(OPENEXR_SHARED)
+
+#TARGET_LINK_LIBRARIES(IlmImf ${LIBS})
+
+INSTALL(TARGETS IlmImf
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib/static)
+
+INSTALL(FILES 
+	ImfArray.h
+	ImfAttribute.h
+	ImfAutoArray.h
+	ImfB44Compressor.h
+	ImfBoxAttribute.h
+	ImfCRgbaFile.h
+	ImfChannelList.h
+	ImfChannelListAttribute.h
+	ImfChromaticities.h
+	ImfChromaticitiesAttribute.h
+	ImfCompression.h
+	ImfCompressionAttribute.h
+	ImfCompressor.h
+	ImfConvert.h
+	ImfDoubleAttribute.h
+	ImfEnvmap.h
+	ImfEnvmapAttribute.h
+	ImfFloatAttribute.h
+	ImfFrameBuffer.h
+	ImfFramesPerSecond.h
+	ImfHeader.h
+	ImfHuf.h
+	ImfIO.h
+	ImfInputFile.h
+	ImfInt64.h
+	ImfIntAttribute.h
+	ImfKeyCode.h
+	ImfKeyCodeAttribute.h
+	ImfLineOrder.h
+	ImfLineOrderAttribute.h
+	ImfLut.h
+	ImfMatrixAttribute.h
+	ImfMisc.h
+	ImfName.h
+	ImfOpaqueAttribute.h
+	ImfOutputFile.h
+	ImfPixelType.h
+	ImfPizCompressor.h
+	ImfPreviewImage.h
+	ImfPreviewImageAttribute.h
+	ImfPxr24Compressor.h
+	ImfRational.h
+	ImfRationalAttribute.h
+	ImfRgba.h
+	ImfRgbaFile.h
+	ImfRgbaYca.h
+	ImfRleCompressor.h
+	ImfScanLineInputFile.h
+	ImfStandardAttributes.h
+	ImfStdIO.h
+	ImfStringAttribute.h
+	ImfTestFile.h
+	ImfThreading.h
+	ImfTileDescription.h
+	ImfTileDescriptionAttribute.h
+	ImfTileOffsets.h
+	ImfTiledInputFile.h
+	ImfTiledMisc.h
+	ImfTiledOutputFile.h
+	ImfTiledRgbaFile.h
+	ImfTimeCode.h
+	ImfTimeCodeAttribute.h
+	ImfVecAttribute.h
+	ImfVersion.h
+	ImfWav.h
+	ImfXdr.h
+	ImfZipCompressor.h
+	b44ExpLogTable.h
+	DESTINATION include/OpenEXR)
