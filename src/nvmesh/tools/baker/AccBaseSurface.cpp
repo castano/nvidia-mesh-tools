@@ -26,7 +26,7 @@ uint AccBaseSurface::faceCount() const
 
 void AccBaseSurface::selectFace(uint i)
 {
-    AccMesh::Patch patch = m_mesh->patchAt(i);
+    const AccMesh::Patch & patch = m_mesh->patchAt(i);
 
     if (patch.bezierAccPatch != NULL) m_surfacePatch = patch.bezierAccPatch;
     else if (patch.gregoryAccPatch != NULL) m_surfacePatch = patch.gregoryAccPatch;

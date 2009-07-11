@@ -69,7 +69,7 @@ namespace nv
 
 		struct Patch
 		{
-			Patch() : faceType(FaceType_Undefined), faceOneRing(NULL), bezierAccPatch(NULL), gregoryAccPatch(NULL), pmAccPatch(NULL), texCoordPatch(NULL) {}
+			Patch() : faceType(FaceType_Undefined), faceOneRing(NULL), bezierAccPatch(NULL), gregoryAccPatch(NULL), pmAccPatch(NULL), texCoordPatch(NULL), tangentSpacePatch(NULL) {}
 
 			FaceType faceType;
 			FaceOneRing * faceOneRing;

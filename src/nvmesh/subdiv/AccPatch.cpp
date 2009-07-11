@@ -151,7 +151,7 @@ Vector3 FaceOneRing::evaluteNormalStencil(const StencilMask & mask) const
 
     // @@ Implement linear interpolation using exponential maps?
 
-	return normalize(normal);
+	return normalizeSafe(normal, Vector3(zero), 0.0f);
 }
 
 bool FaceOneRing::isTriangle() const

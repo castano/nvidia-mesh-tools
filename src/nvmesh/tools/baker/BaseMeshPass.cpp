@@ -149,9 +149,13 @@ bool BaseMeshPass::loadMesh()
 		RemapFaces::minimizeTopologyCount(mesh.ptr());
 
         uint buildFlags = BuildFlags_GenerateAll | BuildFlags_BuildTexCoordPatches;
-		if (m_baseMeshType == 1)
+		if (m_baseMeshType == 0)
 		{
-            buildFlags |= BuildFlags_BuildGregoryPatches;
+			buildFlags |= BuildFlags_BuildBezierPatches;
+		}
+		else
+		{
+            buildFlags |= BuildFlags_BuildGregoryPatches;			
 		}
 
 		AccMeshBuilder builder(mesh.ptr(), BoundaryMode_Spline);
