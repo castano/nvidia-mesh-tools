@@ -148,7 +148,7 @@ namespace nv
 		
 		TangentSpacePatch(const FaceOneRing * face);
 
-		virtual PatchType patchType() const { return PatchType_Bezier; }
+		virtual PatchType patchType() const { return PatchType_TangentSpace; }
 
 		Vector3 chartTangent(uint idx) const;
 		Vector3 chartBitangent(uint idx) const;
