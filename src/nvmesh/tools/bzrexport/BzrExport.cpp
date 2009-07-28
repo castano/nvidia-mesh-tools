@@ -1140,14 +1140,15 @@ int main(int argc, const char * argv[])
 
 	for (HalfEdge::Mesh::ConstVertexIterator v(halfEdgeMesh.ptr()); !v.isDone(); v.advance())
 	{
-		if (v.current()->valence() > maxValence)
+		const uint currentValence = v.current()->valence();
+		if (currentValence > maxValence)
 		{
-			printf("Error, vertex valence exceeds maximum.\n");
+			printf("Error, vertex valence (%d) exceeds maximum (%d).\n", currentValence, maxValence);
 			return EXIT_FAILURE;
 		}
 
-		if (v.current()->valence() > valence)
-		   valence = v.current()->valence();
+		if (currentValence > valence)
+		   valence = currentValence;
 	}
 	maxValence = valence;
 

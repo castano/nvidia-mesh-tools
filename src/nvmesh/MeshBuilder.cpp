@@ -269,10 +269,16 @@ uint MeshBuilder::addVertex(const Vector3 & pos, const Vector3 & nor, const Vect
 void MeshBuilder::endPolygon()
 {
 	uint count = d->indexArray[d->lastIndex];
-	nvCheck(count > 2);
-	
-	d->maxCount = max(d->maxCount, count);
-	d->faceCount++;
+	if (count <= 2)
+	{
+		// Ignore polygons with less than 3 vertices.
+		d->indexArray.resize(d->indexArray.size() - count - 1);
+	}
+	else
+	{
+		d->maxCount = max(d->maxCount, count);
+		d->faceCount++;
+	}
 }
 
 void MeshBuilder::optimize()
@@ -298,9 +304,9 @@ void MeshBuilder::optimize()
 	for (uint v = 0; v < vertexCount; v++)
 	{
 		Vertex & vertex = d->vertexArray[v];
-		if (d->posArray.count()) vertex.pos = posxrefs[vertex.pos];
-		if (d->norArray.count()) vertex.nor = norxrefs[vertex.nor];
-		if (d->texArray.count()) vertex.tex = texxrefs[vertex.tex];
+		if (vertex.pos != NIL) vertex.pos = posxrefs[vertex.pos];
+		if (vertex.nor != NIL) vertex.nor = norxrefs[vertex.nor];
+		if (vertex.tex != NIL) vertex.tex = texxrefs[vertex.tex];
 	}
 
 
