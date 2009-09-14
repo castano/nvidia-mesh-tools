@@ -209,7 +209,7 @@ bool TestTriangle(const unsigned short v0, const unsigned short v1, const unsign
 //
 // Be sure to call delete[] on the returned primGroups to avoid leaking mem
 //
-bool nv::TriStrip::GenerateStrips(const unsigned short* in_indices, const size_t in_numIndices,
+bool nv::TriStrip::GenerateStrips(const unsigned short* in_indices, const unsigned int in_numIndices,
 					PrimitiveGroup** primGroups, unsigned short* numGroups, bool validateEnabled)
 {
 	//put data in format that the stripifier likes
