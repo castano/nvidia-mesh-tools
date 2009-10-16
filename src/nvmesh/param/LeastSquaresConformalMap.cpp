@@ -130,6 +130,7 @@ namespace
 		HalfEdge::Vertex * minVertex[3];
 		HalfEdge::Vertex * maxVertex[3];
 
+#pragma message(NV_FILE_LINE "FIXME: Do not initialize min/max vertices with vertex that may not be on a boundary.")
 		minVertex[0] = minVertex[1] = minVertex[2] = mesh->vertexAt(0);
 		maxVertex[0] = maxVertex[1] = maxVertex[2] = mesh->vertexAt(0);
 
