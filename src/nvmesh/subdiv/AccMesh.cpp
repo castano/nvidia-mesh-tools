@@ -503,60 +503,117 @@ HalfEdge::Mesh * AccMesh::tessellate(uint level)
 	{
         const Patch & patch = patchAt(p);
 
-#pragma message(NV_FILE_LINE "Add support for triangle tessellation")
-        if (patch.faceType == AccMesh::FaceType_Tri) 
-            continue;
+		if (patch.faceType == AccMesh::FaceType_Tri)
+		{
+			// Add vertices.
+			for	(uint x = 0; x <= level; x++)
+			{
+				const float u = float(x) / level;
 
-        // Add vertices.
-	    for	(uint y = 0; y <= level; y++)
-	    {
-            const float v = float(y) / level;
+				for	(uint y = 0; y <= x; y++)
+				{
+					const float v = float(y) / level;
 
-	        for	(uint x = 0; x <= level; x++)
-	        {
-                const float u = float(x) / level;
+					Vector3 pos, du, dv;
+					//if (patch.bezierAccPatch != NULL) patch.bezierAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
+					if (patch.gregoryAccPatch != NULL) patch.gregoryAccPatch->evaluateSurface(1.0f-u, v, &pos, &du, &dv);
+					if (patch.pmAccPatch != NULL) patch.pmAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
 
-                Vector3 pos, du, dv;
-                if (patch.bezierAccPatch != NULL) patch.bezierAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
-                if (patch.gregoryAccPatch != NULL) patch.gregoryAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
-                if (patch.pmAccPatch != NULL) patch.pmAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
+					positionIndices[y * (level + 1) + x] = builder.addPosition(pos);
 
-                positionIndices[y * (level + 1) + x] = builder.addPosition(pos);
+					Vector3 normal = normalizeSafe(cross(du, dv), Vector3(zero), 0);
+					
+					normalIndices[y * (level + 1) + x] = builder.addNormal(normal);
+				}
+			}
 
-                Vector3 normal = normalizeSafe(cross(du, dv), Vector3(zero), 0);
-                
-                normalIndices[y * (level + 1) + x] = builder.addNormal(normal);
-            }
-        }
+			// Add triangles.
+			for	(uint x = 0; x < level; x++)
+			{
+				for	(uint y = 0; y <= x; y++)
+				{
+					int p0 = positionIndices[(y + 0) * (level + 1) + x + 0];
+					int p1 = positionIndices[(y + 0) * (level + 1) + x + 1];
+					int p3 = positionIndices[(y + 1) * (level + 1) + x + 1];
 
-        // Add triangles.
-	    for	(uint y = 0; y < level; y++)
-	    {
-	        for	(uint x = 0; x < level; x++)
-	        {
-                int p0 = positionIndices[(y + 0) * (level + 1) + x + 0];
-                int p1 = positionIndices[(y + 0) * (level + 1) + x + 1];
-                int p2 = positionIndices[(y + 1) * (level + 1) + x + 0];
-                int p3 = positionIndices[(y + 1) * (level + 1) + x + 1];
+					int n0 = normalIndices[(y + 0) * (level + 1) + x + 0];
+					int n1 = normalIndices[(y + 0) * (level + 1) + x + 1];
+					int n3 = normalIndices[(y + 1) * (level + 1) + x + 1];
 
-                int n0 = normalIndices[(y + 0) * (level + 1) + x + 0];
-                int n1 = normalIndices[(y + 0) * (level + 1) + x + 1];
-                int n2 = normalIndices[(y + 1) * (level + 1) + x + 0];
-                int n3 = normalIndices[(y + 1) * (level + 1) + x + 1];
+					builder.beginPolygon();
+					builder.addVertex(p0, n0);
+					builder.addVertex(p1, n1);
+					builder.addVertex(p3, n3);
+					builder.endPolygon();
 
-                builder.beginPolygon();
-                builder.addVertex(p0, n0);
-                builder.addVertex(p1, n1);
-                builder.addVertex(p2, n2);
-                builder.endPolygon();
+					if (y < x) {
+						int p2 = positionIndices[(y + 1) * (level + 1) + x + 0];
+						int n2 = normalIndices[(y + 1) * (level + 1) + x + 0];
 
-                builder.beginPolygon();
-                builder.addVertex(p2, n2);
-                builder.addVertex(p1, n1);
-                builder.addVertex(p3, n3);
-                builder.endPolygon();
-            }
-        }
+						builder.beginPolygon();
+						builder.addVertex(p0, n0);
+						builder.addVertex(p3, n3);
+						builder.addVertex(p2, n2);
+						builder.endPolygon();
+					}
+				}
+			}
+		}
+		else
+		{
+			nvCheck (patch.faceType == AccMesh::FaceType_Quad || patch.faceType == AccMesh::FaceType_Regular);
+
+			// Add vertices.
+			for	(uint y = 0; y <= level; y++)
+			{
+				const float v = float(y) / level;
+
+				for	(uint x = 0; x <= level; x++)
+				{
+					const float u = float(x) / level;
+
+					Vector3 pos, du, dv;
+					if (patch.bezierAccPatch != NULL) patch.bezierAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
+					if (patch.gregoryAccPatch != NULL) patch.gregoryAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
+					if (patch.pmAccPatch != NULL) patch.pmAccPatch->evaluateSurface(u, v, &pos, &du, &dv);
+
+					positionIndices[y * (level + 1) + x] = builder.addPosition(pos);
+
+					Vector3 normal = normalizeSafe(cross(du, dv), Vector3(zero), 0);
+	                
+					normalIndices[y * (level + 1) + x] = builder.addNormal(normal);
+				}
+			}
+
+			// Add triangles.
+			for	(uint y = 0; y < level; y++)
+			{
+				for	(uint x = 0; x < level; x++)
+				{
+					int p0 = positionIndices[(y + 0) * (level + 1) + x + 0];
+					int p1 = positionIndices[(y + 0) * (level + 1) + x + 1];
+					int p2 = positionIndices[(y + 1) * (level + 1) + x + 0];
+					int p3 = positionIndices[(y + 1) * (level + 1) + x + 1];
+
+					int n0 = normalIndices[(y + 0) * (level + 1) + x + 0];
+					int n1 = normalIndices[(y + 0) * (level + 1) + x + 1];
+					int n2 = normalIndices[(y + 1) * (level + 1) + x + 0];
+					int n3 = normalIndices[(y + 1) * (level + 1) + x + 1];
+
+					builder.beginPolygon();
+					builder.addVertex(p0, n0);
+					builder.addVertex(p1, n1);
+					builder.addVertex(p2, n2);
+					builder.endPolygon();
+
+					builder.beginPolygon();
+					builder.addVertex(p2, n2);
+					builder.addVertex(p1, n1);
+					builder.addVertex(p3, n3);
+					builder.endPolygon();
+				}
+			}
+		}
     }
 
     builder.done();
