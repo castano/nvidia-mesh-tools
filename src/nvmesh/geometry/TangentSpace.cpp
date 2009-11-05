@@ -93,24 +93,30 @@ void nv::geometry::computeMeshTangents(const TriMesh * mesh, Array<Basis> & mesh
 }
 
 
-struct VertexBasis
+struct VertexFrameSolver
 {
-	VertexBasis() : 
+	VertexFrameSolver() : 
 		uu_sum(0),
 		vv_sum(0),
 		uv_sum(0),
 		qu_sum(zero),
 		qv_sum(zero) {}
 
-	float uu_sum;
-	float vv_sum;
-	float uv_sum;
-	Vector3 qu_sum;
-	Vector3 qv_sum;
-
-	void evaluateTangents(Vector3 & tan0, Vector3 & tan1) const
+	void addEquation(Vector3::Arg q, Vector2::Arg v)
 	{
-		const float denom = uu_sum * vv_sum - uv_sum * uv_sum;
+		qu_sum += q * v.x();
+		qv_sum += q * v.y();
+
+		uu_sum += v.x() * v.x();
+		uv_sum += v.x() * v.y();
+		vv_sum += v.y() * v.y();
+	}
+
+	float denominator() const { return uu_sum * vv_sum - uv_sum * uv_sum; }
+	
+	void solve(Vector3 & tan0, Vector3 & tan1) const
+	{
+		const float denom = denominator();
 		nvCheck(!equal(denom, 0.0f, 0.0f));
 
 		const float factor = 1.0f / denom;
@@ -118,6 +124,13 @@ struct VertexBasis
 		tan0 = (qu_sum * vv_sum - qv_sum * uv_sum) * factor;
 		tan1 = (qv_sum * uu_sum - qu_sum * uv_sum) * factor;
 	}
+	
+private:
+	float uu_sum;
+	float vv_sum;
+	float uv_sum;
+	Vector3 qu_sum;
+	Vector3 qv_sum;	
 };
 
 void nv::geometry::computeLeastSquaresMeshTangents(const TriMesh * mesh, Array<Basis> & meshBasis)
@@ -126,8 +139,8 @@ void nv::geometry::computeLeastSquaresMeshTangents(const TriMesh * mesh, Array<B
 
 	const uint vertexCount = mesh->vertexCount();
 
-	Array<VertexBasis> vertexBasisArray;
-	vertexBasisArray.resize(vertexCount);
+	Array<VertexFrameSolver> vertexFrameArray;
+	vertexFrameArray.resize(vertexCount);
 
 	const uint faceCount = mesh->faceCount();
     for (uint f = 0; f < faceCount; f++)
@@ -144,19 +157,8 @@ void nv::geometry::computeLeastSquaresMeshTangents(const TriMesh * mesh, Array<B
 			const Vector3 q = to.pos - from.pos;
 			const Vector2 v = to.tex - from.tex;
 
-			vertexBasisArray[face.v[i]].qu_sum += q * v.x();
-			vertexBasisArray[face.v[i]].qv_sum += q * v.y();
-
-			vertexBasisArray[face.v[i]].uu_sum += v.x() * v.x();
-			vertexBasisArray[face.v[i]].uv_sum += v.x() * v.y();
-			vertexBasisArray[face.v[i]].vv_sum += v.y() * v.y();
-
-			vertexBasisArray[face.v[j]].qu_sum += q * v.x();
-			vertexBasisArray[face.v[j]].qv_sum += q * v.y();
-
-			vertexBasisArray[face.v[j]].uu_sum += v.x() * v.x();
-			vertexBasisArray[face.v[j]].uv_sum += v.x() * v.y();
-			vertexBasisArray[face.v[j]].vv_sum += v.y() * v.y();
+			vertexFrameArray[face.v[i]].addEquation(q, v);
+			vertexFrameArray[face.v[j]].addEquation(q, v);
 		}
 	}
 
@@ -164,7 +166,7 @@ void nv::geometry::computeLeastSquaresMeshTangents(const TriMesh * mesh, Array<B
 	{
 		const TriMesh::Vertex & vertex = mesh->vertexAt(v);
 
-		vertexBasisArray[v].evaluateTangents(meshBasis[v].tangent, meshBasis[v].bitangent);
+		vertexFrameArray[v].solve(meshBasis[v].tangent, meshBasis[v].bitangent);
 
 		// Normalize basis vectors:
 		meshBasis[v].normal = normalize(vertex.nor, 0.0f);
@@ -256,12 +258,7 @@ void nv::geometry::computeLeastSquaresTangentBasis(const HalfEdge::Vertex * vert
 	nvCheck(vertex != NULL);
 	nvCheck(basis != NULL);
 
-	float uu_sum = 0;
-	float vv_sum = 0;
-	float uv_sum = 0;
-
-	Vector3 qu_sum(zero);
-	Vector3 qv_sum(zero);
+	VertexFrameSolver vertexFrame;
 
 	int i = 0;
 	for (HalfEdge::Vertex::ConstEdgeIterator it(vertex->edges()); !it.isDone(); it.advance(), i++)
@@ -291,26 +288,12 @@ void nv::geometry::computeLeastSquaresTangentBasis(const HalfEdge::Vertex * vert
 		const Vector2 v = to->tex() - from->tex();
 
 		// Setup edge equations:
-		qu_sum += q * v.x();
-		qv_sum += q * v.y();
-
-		uu_sum += v.x() * v.x();
-		uv_sum += v.x() * v.y();
-		vv_sum += v.y() * v.y();
+		vertexFrame.addEquation(q, v);
 	}
 
 	// Solve equation system:
-	float denom = uu_sum * vv_sum - uv_sum * uv_sum;
-	nvCheck(!equal(denom, 0.0f, 0.0f));
-
-	float factor = 1.0f / denom;
-
-	Vector3 tan0 = (qu_sum * vv_sum - qv_sum * uv_sum) * factor;
-	Vector3 tan1 = (qv_sum * uu_sum - qu_sum * uv_sum) * factor;
-
 	basis->normal = vertex->nor();
-	basis->tangent = tan0;
-	basis->bitangent = tan1;
+	vertexFrame.solve(basis->tangent, basis->bitangent);
 }
 
 
@@ -437,12 +420,7 @@ static void computeLeastSquaresCatmullClarkBasis(const HalfEdge::Vertex * vertex
 
 	Vector3 normal = MeshNormals::computeCatmullClarkNormal(vertex);
 
-	float uu_sum = 0;
-	float vv_sum = 0;
-	float uv_sum = 0;
-
-	Vector3 qu_sum(zero);
-	Vector3 qv_sum(zero);
+	VertexFrameSolver vertexFrame;
 
 	int i = 0;
 	for (HalfEdge::Vertex::ConstEdgeIterator it(vertex->edges()); !it.isDone(); it.advance(), i++)
@@ -468,20 +446,14 @@ static void computeLeastSquaresCatmullClarkBasis(const HalfEdge::Vertex * vertex
 		}
 
 		const Vector3 ccq = MeshNormals::computeCatmullClarkTangent(edge);
-		const Vector3 q = to->pos() - from->pos();
 		const Vector2 v = to->tex() - from->tex();
 
 		// Setup edge equations:
-		qu_sum += ccq * v.x();
-		qv_sum += ccq * v.y();
-
-		uu_sum += v.x() * v.x();
-		uv_sum += v.x() * v.y();
-		vv_sum += v.y() * v.y();
+		vertexFrame.addEquation(ccq, v);
 	}
 
 	// Solve equation system:
-	float denom = uu_sum * vv_sum - uv_sum * uv_sum;
+	float denom = vertexFrame.denominator();
 	if (denom == 0)
 	{
 		// @@ this happens on isolated vertices.
@@ -500,14 +472,8 @@ static void computeLeastSquaresCatmullClarkBasis(const HalfEdge::Vertex * vertex
 	}
 	else
 	{
-		float factor = 1.0f / denom;
-
-		Vector3 tan0 = (qu_sum * vv_sum - qv_sum * uv_sum) * factor;
-		Vector3 tan1 = (qv_sum * uu_sum - qu_sum * uv_sum) * factor;
-
 		basis->normal = normal;
-		basis->tangent = tan0;
-		basis->bitangent = tan1;
+		vertexFrame.solve(basis->tangent, basis->bitangent);
 	}
 }
 
