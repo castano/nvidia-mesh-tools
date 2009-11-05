@@ -2,7 +2,7 @@
 
 tar zcvf nvidia-mesh-tools-`cat VERSION`.tar.gz \
 	--exclude '.*' --exclude debian --exclude '*~' --exclude buildpkg \
-	--exclude build --exclude tags --exclude Makefile \
+	--exclude 'build-*' --exclude tags --exclude Makefile \
 	--exclude vc7 --exclude vc8 --exclude project \
 	--exclude 'nvidia-mesh-tools-*.tar.gz' \
 	--transform 's,^,nvidia-mesh-tools/,' *
