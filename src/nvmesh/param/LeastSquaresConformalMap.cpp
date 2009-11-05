@@ -184,9 +184,9 @@ namespace
     // in a local 2D orthonormal basis of the triangle's plane.
     static void project_triangle(Vector3::Arg p0, Vector3::Arg p1, Vector3::Arg p2, Vector2 * z0, Vector2 * z1, Vector2 * z2)
 	{
-		Vector3 X = normalize(p1 - p0);
-		Vector3 Z = normalize(cross(X, (p2 - p0)));
-		Vector3 Y = normalize(cross(Z, X));
+		Vector3 X = normalize(p1 - p0, 0.0f);
+		Vector3 Z = normalize(cross(X, (p2 - p0)), 0.0f);
+		Vector3 Y = normalize(cross(Z, X), 0.0f);
 		
 		float x0 = 0.0f;
 		float y0 = 0.0f;
