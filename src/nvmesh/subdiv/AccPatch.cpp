@@ -183,14 +183,11 @@ uint FaceOneRing::edgeCount() const
 		// Regular faces only have ordinary vertices.
 		if (edge->vertex()->valence() != 4) return false;
 
-		//Regular faces are only adjacent to quads
-		const HalfEdge::Vertex * vertex = edge->from();
-		uint i=0;
-		for(HalfEdge::Vertex::ConstEdgeIterator eit(vertex->edges()); !eit.isDone(); eit.advance())
+		// Regular faces are only adjacent to quads
+		for (HalfEdge::Vertex::ConstEdgeIterator eit(edge); !eit.isDone(); eit.advance())
 		{
-			i++;
+			if (eit.current()->face()->edgeCount() != 4) return false;
 		}
-		if (i !=4 ) return false;
 	}
 
 	return true;
