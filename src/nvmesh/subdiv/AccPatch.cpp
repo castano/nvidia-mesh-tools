@@ -186,7 +186,7 @@ uint FaceOneRing::edgeCount() const
 		// Regular faces are only adjacent to quads
 		for (HalfEdge::Vertex::ConstEdgeIterator eit(edge); !eit.isDone(); eit.advance())
 		{
-			if (eit.current()->face()->edgeCount() != 4) return false;
+			if (eit.current()->face() == NULL || eit.current()->face()->edgeCount() != 4) return false;
 		}
 	}
 
