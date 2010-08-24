@@ -200,7 +200,8 @@ void DisplacementPatchSampler::sample(int x, int y, Vector3::Arg bar, Vector3::A
 	m_surface->evaluate(u, v, &origin, &patchFrame, &chartFrame);
 
 	float normalDeviation = dot(chartFrame.normal, patchFrame.normal);
-	patchFrame.normal = chartFrame.normal;
+	//tni: remove it for now
+	//patchFrame.normal = chartFrame.normal;
 
 #if 0
 	Vector3 tangentSpaceNormal = chartFrame.tangent;
@@ -254,7 +255,9 @@ void DisplacementPatchSampler::sample(int x, int y, Vector3::Arg bar, Vector3::A
 			}
 			else
 			{
-				float l = dot(chartFrame.normal, displacement);
+				//tni: remove it for now, since chart frame is not computed at all
+				//float l = dot(chartFrame.normal, displacement);
+				float l = dot(patchFrame.normal, displacement);
 				m_geometryMap.addPixel(coverage * l, x, y, m_geometryMap.displacementChannel());
 			}
 		}
