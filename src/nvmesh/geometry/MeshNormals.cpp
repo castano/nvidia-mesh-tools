@@ -132,6 +132,7 @@ bool nv::MeshNormals::hasNormals(const BaseMesh * mesh)
 }
 
 // Fast normal computation without smooth groups nor creases. Does not require colocal information.
+// --lomode 2
 void nv::MeshNormals::computeNormals(TriMesh * mesh, uint flags)
 {
 	nvCheck(mesh != NULL);
@@ -201,6 +202,7 @@ void nv::MeshNormals::computeNormals(TriMesh * mesh, uint flags)
 
 // Fast normal computation without smooth groups nor creases. 
 // fast hack, needs review
+// Use this one!
 void nv::MeshNormals::computeNormals(QuadTriMesh * mesh, uint flags)
 {
 	nvCheck(mesh != NULL);
@@ -369,7 +371,7 @@ void nv::MeshNormals::computeCreasedNormals(HalfEdge::Mesh * mesh, bool weightFa
 
 /**
  * Dave Moore wrote:
- *   Just to throw another technique out there, if you know that your mesh
+ * ?Just to throw another technique out there, if you know that your mesh
  * is a manifold, or a manifold with a boundary, you can get the vertex
  * normals by computing the tangent plane to the Loop subdivision limit
  * surface, which is well defined at all verts.  This is actually much
@@ -379,23 +381,23 @@ void nv::MeshNormals::computeCreasedNormals(HalfEdge::Mesh * mesh, bool weightFa
  *   means you only need a very simple connectivity structure
  * - No intermediate (i.e, "face") normal calculations, the whole thing
  *   is dependant on vertex positions.
- * - Hordes of brainy Ph.D's have verified that the solution exists  :)
+ * - Hordes of brainy Ph.D's have verified that the solution exists ?)
  * 
- *   Being practical though, I couldn't tell the difference (visually)
+ * ?Being practical though, I couldn't tell the difference (visually)
  * between normals calculated with Loop, Face area weighted, or Face angle
  * weighted.  Especially if you have to deal with non-manifold meshes, stay
  * away from this one...:)  You can find the formula for this in "Real Time
  * Rendering, 2nd" which I unfortunately don't have handy.
  * 
- *   Quick follow up: If p_0..p_(n-1) are the (ordered) neighbor vertices
+ * ?Quick follow up: If p_0..p_(n-1) are the (ordered) neighbor vertices
  * for vertex p, the two tangents and the limit normal of the Loop surface
  * are:
  * 
  * t_u = sum[j=0..n-1]( cos(2 PI j / n) * p_j )
  * t_v = sum[j=0..n-1]( sin(2 PI j / n) * p_j )
- * n   = cross(t_u, t_v);
+ * n ?= cross(t_u, t_v);
  * 
- *   Sorry to clutter the list with stuff that can be easily looked up
+ * ?Sorry to clutter the list with stuff that can be easily looked up
  * (RTR2, p536), but that's a fun set of formulas.  Looking at them, it's
  * kind of hard to believe that they're actually doing anything interesting
  * at all.  The cos/sin values are something I'd expect to find in a DFT,
