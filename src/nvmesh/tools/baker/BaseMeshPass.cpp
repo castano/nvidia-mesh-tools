@@ -166,12 +166,13 @@ bool BaseMeshPass::loadMesh()
 		TriMesh * mesh = importer->builder().buildTriMesh();
 
 		//MeshTransform::fitBox(mesh, Box(Vector3(-1,-1,-1), Vector3(1,1,1)));
-		MeshTransform::transform(mesh, 
+		// @@ why is this transformation here? Removing it corrects vector displacement generation! 
+		/*MeshTransform::transform(mesh, 
 			Matrix(Vector4(1, 0, 0, 0), 
 			Vector4(0, -1, 0, 0), 
 			Vector4(0, 0, -1, 0), 
 			Vector4(0, 0, 0, 1)));
-
+        */
 		AutoPtr<TriBaseSurface> baseSurface(new TriBaseSurface(mesh));
 		
 		//baseSurface->prepare(TangentSpaceMode_MeshMender);
@@ -350,7 +351,7 @@ void BaseMeshPass::saveMaps(const char * name) const
 			// Vector displacement in object space.
 			fileName = name;
 			fileName.stripExtension();
-			fileName.append("_vmap.tif");
+			fileName.append("_vmap.tga");
 
 			saveDisplacementMap(fileName.str());
 		}
