@@ -46,21 +46,21 @@ uint controlPointOrderGregory[20] = {
     16, 14, 17, 4, 5
 };
 
-const bool s_outputControlPoints = true;
+const bool s_outputLocalMesh = true;
+const bool s_outputControlPoints = false;
 const bool s_outputStencils = false;
-const bool s_outputMesh = true;
-const bool s_outputTwoStageData = true;
-
+const bool s_outputMesh = false;
+const bool s_outputTwoStageData = false;
 
 static void OutputHeader(StdOutputStream & stream, const AccMesh * accMesh, const HalfEdge::Mesh * mesh, bool exportText)
 {
-	if (!exportText)
+	/*if (!exportText)
 	{
 		uint header = uint('B') | (uint('Z') << 8) | (uint('R') << 16) | (uint(' ') << 24);
 		uint version = 0x0100; // 1.0
 
 		stream << header << version;
-	}
+	}*/
 
 	//
 	uint regularPatchCount = accMesh->regularPatchCount();
@@ -80,6 +80,147 @@ static void OutputHeader(StdOutputStream & stream, const AccMesh * accMesh, cons
 		stream << triPatchCount;
 	}
 }
+
+static void OutputLocalMesh(StdOutputStream & stream, const AccMesh * accMesh, const HalfEdge::Mesh * mesh, int maxValence, bool exportText)
+{
+    nvCheck(maxValence <= 16);
+
+	const uint regularPatchCount = accMesh->regularPatchCount();
+	const uint quadPatchCount = accMesh->quadPatchCount();
+	const uint triPatchCount = accMesh->triPatchCount();
+
+	const uint patchCount = accMesh->patchCount();
+	uint vertexCount = mesh->vertexCount();
+
+    TextWriter writer(&stream);
+
+    if (exportText) {
+        writer << "\n// Input Mesh\n\n";
+        writer << "\n// Vertices\n\n";
+        writer << "const int vertex_count = " << vertexCount << ";\n\n";
+    }
+    else {
+        stream << vertexCount;
+    }
+
+
+    if (exportText) {
+        writer << "const float3 positions[vertex_count] =\n{\n";
+    }
+    for (uint v = 0; v < vertexCount; v++)
+    {
+        const HalfEdge::Vertex * vertex = mesh->vertexAt(v);
+        Vector3 pos = vertex->pos();
+        
+        if (exportText) writer.write("\t{%f, %f, %f},\n", pos.x(), pos.y(), pos.z());
+        else stream << pos;
+
+    }
+	if (exportText) writer << "};\n\n";
+
+	if (exportText) {
+        writer << "const float3 normals[vertex_count] =\n{\n";
+    }
+    for (uint v = 0; v < vertexCount; v++)
+    {
+        const HalfEdge::Vertex * vertex = mesh->vertexAt(v);
+        Vector3 nor = vertex->nor();
+        
+        if (exportText) writer.write("\t{%f, %f, %f},\n", nor.x(), nor.y(), nor.z());
+        else stream << nor;
+
+    }
+	if (exportText) writer << "};\n\n";
+
+	if (exportText) {
+        writer << "const float2 texCoords[vertex_count] =\n{\n";
+    }
+    for (uint v = 0; v < vertexCount; v++)
+    {
+        const HalfEdge::Vertex * vertex = mesh->vertexAt(v);
+        Vector2 tex = vertex->tex();
+        
+        if (exportText) writer.write("\t{%f, %f},\n", tex.x(), tex.y());
+        else stream << tex;
+
+    }
+	if (exportText) writer << "};\n\n";
+
+
+    // Output face indices
+    if (exportText) writer << "\n// Face Indices\n\n";
+
+
+	if (regularPatchCount+quadPatchCount > 0)
+    {
+		if (exportText) writer << "const int face_indices[quadPatchCount][4] =\n{\n";
+		for (uint p = 0; p < regularPatchCount; ++p)
+        {
+			const HalfEdge::Face * face = accMesh->regularPatchAt(p).faceOneRing->face();
+
+			if (exportText) writer << "\t{ ";
+
+			for (HalfEdge::Face::ConstEdgeIterator it(face->edges()); !it.isDone(); it.advance())
+			{
+				uint id = it.current()->vertex()->id();
+				if (exportText) writer << id << ", ";
+				else stream << id;
+			}
+
+			if (exportText) writer << "},\n";
+        }
+
+        for (uint p = 0; p < quadPatchCount; ++p)
+		{
+			const HalfEdge::Face * face = accMesh->quadPatchAt(p).faceOneRing->face();
+
+			if (exportText) writer << "\t{ ";
+
+			for (HalfEdge::Face::ConstEdgeIterator it(face->edges()); !it.isDone(); it.advance())
+			{
+				uint id = it.current()->vertex()->id();
+				if (exportText) writer << id << ", ";
+				else stream << id;
+			}
+
+			if (exportText) writer << "},\n";
+        }
+
+		if (exportText) writer << "};\n\n";
+    }
+    else
+    {
+        if (exportText) writer << "const int face_indices[1][4] = {{0, 0, 0, 0}};\n\n";
+    }
+
+	if (triPatchCount > 0)
+    {
+        if (exportText) writer << "const int tri_face_indices[tri_patch_count][3] =\n{\n";
+
+		for (uint p = 0; p < triPatchCount; ++p)
+		{
+			const HalfEdge::Face * face = accMesh->triPatchAt(p).faceOneRing->face();
+
+			if (exportText) writer << "\t{ ";
+
+			for (HalfEdge::Face::ConstEdgeIterator it(face->edges()); !it.isDone(); it.advance())
+			{
+				uint id = it.current()->vertex()->id();
+				if (exportText) writer << id << ", ";
+				else stream << id;
+			}
+
+			if (exportText) writer << "},\n";
+		}
+
+        if (exportText) writer << "};\n\n";
+    }
+    else
+    {
+        if (exportText) writer << "const int tri_face_indices[1][3]={{0,0,0}};\n\n";
+    }
+}
+
 
 static void OutputControlPoints(StdOutputStream & stream, const AccMesh * accMesh, const HalfEdge::Mesh * mesh, bool reorder, bool exportText)
 {
@@ -1230,6 +1371,11 @@ int main(int argc, const char * argv[])
     //     Triangle Face offsets          | 6 * trianglePatchCount * sizeof(uint)
 
 	OutputHeader(outputStream, accMesh.ptr(), halfEdgeMesh.ptr(), exportText);
+	
+	if (s_outputLocalMesh)
+	{
+		OutputLocalMesh(outputStream, accMesh.ptr(), halfEdgeMesh.ptr(), maxValence, exportText);
+	}
 
 	if (s_outputControlPoints)
 	{
