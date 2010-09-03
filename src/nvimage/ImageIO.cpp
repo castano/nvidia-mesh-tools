@@ -199,7 +199,7 @@ FloatImage * nv::ImageIO::loadFloat(const char * fileName, Stream & s)
 
 bool nv::ImageIO::saveFloat(const char * fileName, const FloatImage * fimage, uint base_component, uint num_components)
 {
-	const char * extension = Path::extension(fileName);
+   	const char * extension = Path::extension(fileName);
 
 #if defined(HAVE_OPENEXR)
 	if (strCaseCmp(extension, ".exr") == 0)
@@ -212,7 +212,7 @@ bool nv::ImageIO::saveFloat(const char * fileName, const FloatImage * fimage, ui
 	if (strCaseCmp(extension, ".tif") == 0 || strCaseCmp(extension, ".tiff") == 0)
 	{
 		return ImageIO::saveFloatTIFF(fileName, fimage, base_component, num_components);
-	}
+	}  
 #endif
 
 	// @@ Disable Temporarily
